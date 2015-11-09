@@ -1,0 +1,1 @@
+This is the repository of a crime visualization. It is being made by scraping arrest blotters and caching the information. After being cleaned, the addresses are geocoded. Ideally the locations will be displayed on a map. This is a work in progress.
