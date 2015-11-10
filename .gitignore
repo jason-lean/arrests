@@ -1,0 +1,2 @@
+#dont include the raw arrests file. It has names and addresses
+arrests.csv
