@@ -34,6 +34,7 @@
 	var path = d3.geo.path()
 		.pointRadius(1)
 		.projection(projection);
+	var timeFormat = d3.time.format("%m/%e/%Y  %H:%M");
 
 	var svg = d3.select("body").append("svg")
 	    .attr("width", width)
@@ -70,9 +71,8 @@
 		d3.csv("arrests-geocoded.csv", function(arrests) {
 			arrests.forEach(function(d) {
 				d.charges = d.charges.split("\n");
+				d.date = timeFormat.parse(d.date);
 			});
-
-			console.log(arrests);
 
 			svg.selectAll("circle")
 				.data(arrests)
@@ -84,8 +84,8 @@
 				})
 				.attr("transform", function(d) {return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; })
 				.append("title")
-					.text(function(d) { return "Date: " + d.date + "\nCharges: " +d.charges; });
-
+					.text(function(d) { return "Date: " + d.date + "\nCharges: " + d.charges; });
+		console.log(arrests);
 		});
 	});
 </script>
