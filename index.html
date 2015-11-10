@@ -5,14 +5,17 @@
 	<title></title>
 
 	<style>
+		body {
+			background-color: #eee;
+		}
 		.roads {
 			fill: none;
 			stroke: #000;
-			stroke-width: .5px;
+			stroke-width: .625px;
 		}
 		.arrests {
 			fill: red;
-			fill-opacity:.25;
+			fill-opacity:.35;
 			stroke: none;
 		}
 	</style>
@@ -22,7 +25,7 @@
 <script>
 	var width = 960,
 	    height = 600,
-	    defScale = 1000,
+	    defScale = 266132,
 	    defTranslate = [425693, 213458];
 
 	var projection = d3.geo.mercator()
@@ -38,6 +41,7 @@
 		.call(d3.behavior.zoom().on("zoom", redraw));
 
 	function redraw() {
+		console.log("event: ", d3.event.scale);
 		console.log("redraw scale",d3.event.scale * defScale);
 		projection.scale(d3.event.scale * defScale);
 
@@ -46,28 +50,41 @@
 		console.log("redraw x: ", xTranslate);
 		console.log("redraw y: ", yTranslate);
 
-		projection.translate([xTranslate, yTranslate]);
+		//projection.translate([xTranslate, yTranslate]);
 		svg.selectAll("path")
 			.attr("d", path);
 
 		svg.selectAll("circle")
-			.attr("transform", function(d) {return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; });
-	}
+			.attr("transform", function(d) {
+				return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; 
+			});
+		}
 
 	d3.json("ic-map.json", function(error, IC) {
+
 		svg.append("path")
 			.datum(topojson.feature(IC, IC.objects.roads))
 			.attr("class", "roads")
 			.attr("d", path);
 
 		d3.csv("arrests-geocoded.csv", function(arrests) {
+			arrests.forEach(function(d) {
+				d.charges = d.charges.split("\n");
+			});
+
+			console.log(arrests);
+
 			svg.selectAll("circle")
 				.data(arrests)
 				.enter()
 				.append("circle")
 				.attr("class", "arrests")
-				.attr("r", 5)
-				.attr("transform", function(d) {return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; });
+				.attr("r", function(d) {
+					return 5 * d.charges.length;
+				})
+				.attr("transform", function(d) {return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; })
+				.append("title")
+					.text(function(d) { return "Date: " + d.date + "\nCharges: " +d.charges; });
 
 		});
 	});
