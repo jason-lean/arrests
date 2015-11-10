@@ -10,6 +10,11 @@
 			stroke: #000;
 			stroke-width: .5px;
 		}
+		.arrests {
+			fill: red;
+			fill-opacity:.25;
+			stroke: none;
+		}
 	</style>
 	</head>
 
@@ -18,7 +23,7 @@
 	var width = 960,
 	    height = 600,
 	    defScale = 1000,
-	    defTranslate = [0, 0];
+	    defTranslate = [425693, 213458];
 
 	var projection = d3.geo.mercator()
 		.scale(266132)
@@ -44,15 +49,27 @@
 		projection.translate([xTranslate, yTranslate]);
 		svg.selectAll("path")
 			.attr("d", path);
+
+		svg.selectAll("circle")
+			.attr("transform", function(d) {return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; });
 	}
 
 	d3.json("ic-map.json", function(error, IC) {
-		
 		svg.append("path")
 			.datum(topojson.feature(IC, IC.objects.roads))
 			.attr("class", "roads")
 			.attr("d", path);
 
+		d3.csv("arrests-geocoded.csv", function(arrests) {
+			svg.selectAll("circle")
+				.data(arrests)
+				.enter()
+				.append("circle")
+				.attr("class", "arrests")
+				.attr("r", 5)
+				.attr("transform", function(d) {return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; });
+
+		});
 	});
 </script>
 </body>
