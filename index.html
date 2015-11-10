@@ -1,0 +1,58 @@
+    <meta charset="utf-8">
+    <script src="d3.js"></script>
+	<script src="topojson.js"></script>
+
+	<title></title>
+
+	<style>
+		.roads {
+			fill: none;
+			stroke: #000;
+			stroke-width: .5px;
+		}
+	</style>
+	</head>
+
+<body>
+<script>
+	var width = 960,
+	    height = 600,
+	    defScale = 1000,
+	    defTranslate = [0, 0];
+
+	var projection = d3.geo.mercator()
+		.scale(266132)
+		.translate([425693, 213458]);
+	var path = d3.geo.path()
+		.pointRadius(1)
+		.projection(projection);
+
+	var svg = d3.select("body").append("svg")
+	    .attr("width", width)
+		.attr("height", height)
+		.call(d3.behavior.zoom().on("zoom", redraw));
+
+	function redraw() {
+		console.log("redraw scale",d3.event.scale * defScale);
+		projection.scale(d3.event.scale * defScale);
+
+		var xTranslate = d3.event.translate[0] + defTranslate[0],
+			yTranslate = d3.event.translate[1] + defTranslate[1];
+		console.log("redraw x: ", xTranslate);
+		console.log("redraw y: ", yTranslate);
+
+		projection.translate([xTranslate, yTranslate]);
+		svg.selectAll("path")
+			.attr("d", path);
+	}
+
+	d3.json("ic-map.json", function(error, IC) {
+		
+		svg.append("path")
+			.datum(topojson.feature(IC, IC.objects.roads))
+			.attr("class", "roads")
+			.attr("d", path);
+
+	});
+</script>
+</body>
