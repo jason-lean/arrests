@@ -1,6 +1,8 @@
     <meta charset="utf-8">
+
     <script src="d3.js"></script>
 	<script src="topojson.js"></script>
+	<script src="d3.slider.js"></script>
 
 	<title></title>
 
@@ -25,36 +27,43 @@
 <script>
 	var width = 960,
 	    height = 600,
-	    defScale = 266132,
-	    defTranslate = [425693, 213458];
+	    zoomScale = 409.25,
+	    defTranslate = [0, 0];
 
 	var projection = d3.geo.mercator()
-		.scale(266132)
+		.scale(266132)	
 		.translate([425693, 213458]);
 	var path = d3.geo.path()
 		.pointRadius(1)
 		.projection(projection);
-	var timeFormat = d3.time.format("%m/%e/%Y  %H:%M");
+
+	var timeFormat = d3.time.format("%m/%e/%Y  %H:%M"),
+		timeScale = d3.time.scale();
+
+	var test = d3.behavior.zoom()
+		.size([960, 600])
+		.translate([425693, 213458])
+		.scale(650)
+		.scaleExtent([650, 2750])
 
 	var svg = d3.select("body").append("svg")
 	    .attr("width", width)
 		.attr("height", height)
-		.call(d3.behavior.zoom().on("zoom", redraw));
+		.call(test.on("zoom", redraw));
 
 	function redraw() {
-		console.log("event: ", d3.event.scale);
-		console.log("redraw scale",d3.event.scale * defScale);
-		projection.scale(d3.event.scale * defScale);
+		projection.scale(d3.event.scale * zoomScale);
 
 		var xTranslate = d3.event.translate[0] + defTranslate[0],
 			yTranslate = d3.event.translate[1] + defTranslate[1];
-		console.log("redraw x: ", xTranslate);
-		console.log("redraw y: ", yTranslate);
+		projection.translate([xTranslate, yTranslate]);
 
-		//projection.translate([xTranslate, yTranslate]);
+		console.log("Event Scale: ", d3.event.scale);
+		console.log("Projection Scale: ", projection.scale());
+		console.log("Projection Translation: ", projection.translate());
+		
 		svg.selectAll("path")
 			.attr("d", path);
-
 		svg.selectAll("circle")
 			.attr("transform", function(d) {
 				return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; 
@@ -69,23 +78,24 @@
 			.attr("d", path);
 
 		d3.csv("arrests-geocoded.csv", function(arrests) {
+
 			arrests.forEach(function(d) {
 				d.charges = d.charges.split("\n");
 				d.date = timeFormat.parse(d.date);
 			});
+			timeScale.domain(d3.extent(arrests, function(d) { return d.date; }));
 
 			svg.selectAll("circle")
 				.data(arrests)
 				.enter()
 				.append("circle")
 				.attr("class", "arrests")
-				.attr("r", function(d) {
-					return 5 * d.charges.length;
-				})
+				.attr("r", function(d) { return 5 * d.charges.length; })
 				.attr("transform", function(d) {return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; })
 				.append("title")
-					.text(function(d) { return "Date: " + d.date + "\nCharges: " + d.charges; });
-		console.log(arrests);
+					.text(function(d) { 
+						return "Date: " + d.date + "\nCharges: " + d.charges; });
+
 		});
 	});
 </script>
