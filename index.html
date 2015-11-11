@@ -24,6 +24,8 @@
 	</head>
 
 <body>
+<div id="slider"></div>
+<div id="map"></div>
 <script>
 	var width = 960,
 	    height = 600,
@@ -46,7 +48,7 @@
 		.scale(650)
 		.scaleExtent([650, 2750])
 
-	var svg = d3.select("body").append("svg")
+	var svg = d3.select("#map").append("svg")
 	    .attr("width", width)
 		.attr("height", height)
 		.call(test.on("zoom", redraw));
