@@ -83,7 +83,10 @@
 				d.charges = d.charges.split("\n");
 				d.date = timeFormat.parse(d.date);
 			});
+			arrests.sort(function(a, b) { return b.charges.length - a.charges.length; });
 			timeScale.domain(d3.extent(arrests, function(d) { return d.date; }));
+
+
 
 			svg.selectAll("circle")
 				.data(arrests)
