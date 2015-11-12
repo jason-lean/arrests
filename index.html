@@ -18,6 +18,9 @@
 		.water {
 			fill: #A7B4D9;
 		}
+		.buildings {
+			fill: #F5D768;
+		}
 		.roads {
 			fill: none;
 			stroke: #000;
@@ -92,10 +95,15 @@
 			});
 		}
 	d3.json("ic-water.json", function(water) {
-		console.log(water);
 		svg.append("path")
 			.datum(topojson.feature(water, water.objects.water))
 			.attr("class", "water")
+			.attr("d", path);
+	});
+	d3.json("ic-buildings.json", function(data) {
+		svg.append("path")
+			.datum(topojson.feature(data, data.objects.buildings))
+			.attr("class", "buildings")
 			.attr("d", path);
 	})
 	d3.json("ic-map.json", function(error, IC) {
