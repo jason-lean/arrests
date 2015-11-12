@@ -1,14 +1,18 @@
-    <meta charset="utf-8">
+<meta charset="utf-8">
 
-    <script src="d3.js"></script>
-	<script src="topojson.js"></script>
-	<script src="d3.slider.js"></script>
+<script src="d3.js"></script>
+<script src="topojson.js"></script>
+<script src="d3.slider.js"></script>
 
-	<title></title>
+<title></title>
 
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="d3.slider.css" />  
 	<style>
-		body {
-			background-color: #eee;
+
+		.map {
+			pmargin-left: 20;
+			background-color: #e6e6e6;
 		}
 		.roads {
 			fill: none;
@@ -17,41 +21,54 @@
 		}
 		.arrests {
 			fill: red;
-			fill-opacity:.35;
+			fill-opacity:.45;
 			stroke: none;
 		}
 	</style>
-	</head>
+</head>
 
 <body>
 <div id="slider"></div>
 <div id="map"></div>
 <script>
-	var width = 960,
+	var margin = {top:50, right: 20, bottom: 20, left: 20},
+		width = 960,
 	    height = 600,
 	    zoomScale = 409.25,
 	    defTranslate = [0, 0];
 
 	var projection = d3.geo.mercator()
-		.scale(266132)	
-		.translate([425693, 213458]);
+		.scale(478800)	//266132)	
+		.translate([765398, 383961]);	//[425693, 213458]);
 	var path = d3.geo.path()
 		.pointRadius(1)
 		.projection(projection);
 
 	var timeFormat = d3.time.format("%m/%e/%Y  %H:%M"),
-		timeScale = d3.time.scale();
-
-	var test = d3.behavior.zoom()
+		timeScale = d3.time.scale().range([0, 12]);
+    
+	/*var test = d3.behavior.zoom()
 		.size([960, 600])
 		.translate([425693, 213458])
 		.scale(650)
-		.scaleExtent([650, 2750])
+		.scaleExtent([650, 2750])*/
+
+	var test = d3.behavior.zoom()
+		.size([960, 600])
+		.translate([765398, 383961])
+		.scale(1170)
+		.scaleExtent([750, 2750]);
 
 	var svg = d3.select("#map").append("svg")
-	    .attr("width", width)
-		.attr("height", height)
-		.call(test.on("zoom", redraw));
+	    .attr("width", width - margin.left - margin.right)
+		.attr("height", height - margin.top - margin.bottom)
+		.append("g")
+		//.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+		.call(test.on("zoom", redraw)),
+	title = d3.select("#slider").append("svg")
+		.attr("width", width)
+		.attr("height", 50);
+
 
 	function redraw() {
 		projection.scale(d3.event.scale * zoomScale);
@@ -73,35 +90,84 @@
 		}
 
 	d3.json("ic-map.json", function(error, IC) {
-
 		svg.append("path")
 			.datum(topojson.feature(IC, IC.objects.roads))
 			.attr("class", "roads")
 			.attr("d", path);
 
 		d3.csv("arrests-geocoded.csv", function(arrests) {
-
+			//Housekeeping.
+			//Split charges into array, create dates, sort dates, and filter to only halloween.
 			arrests.forEach(function(d) {
 				d.charges = d.charges.split("\n");
 				d.date = timeFormat.parse(d.date);
 			});
-			arrests.sort(function(a, b) { return b.charges.length - a.charges.length; });
+			arrests.sort(function(a, b) { return a.date - b.date; });
+			/*arrests = arrests.filter(function(d) { 
+				return ((timeFormat.parse("10/26/2015  00:00") < d.date) 
+				&& 
+				(d.date > timeFormat.parse("11/2/2015  00:00"))); });*/
 			timeScale.domain(d3.extent(arrests, function(d) { return d.date; }));
-
-
 
 			svg.selectAll("circle")
 				.data(arrests)
 				.enter()
 				.append("circle")
 				.attr("class", "arrests")
-				.attr("r", function(d) { return 5 * d.charges.length; })
+				.attr("r", 0)
 				.attr("transform", function(d) {return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; })
-				.append("title")
+				.on("mouseover", function(d,i) {
+			        d3.select(this).transition()
+			            .ease("elastic")
+			            .duration("00")
+			            .attr("r", function(d) { return 10 * d.charges.length; }); })
+			    .on("mouseout", function(d,i) {
+			        d3.select(this).transition()
+			            .ease("quad")
+			            .delay("100")
+			            .duration("300")
+			            .attr("r", 1)})
+				.append("text")
 					.text(function(d) { 
 						return "Date: " + d.date + "\nCharges: " + d.charges; });
 
+			title.append("text")
+		        .attr("x", 20)             
+		        .attr("y", 25)
+		        .attr("text-anchor", "start")  
+		        .style("font-size", "24px") 
+		        .style("text-decoration", "bold") 
+		        .style("font-family", "Open Sans") 
+		        .text("Crime in Iowa City");
+		    title.append("text")
+		    	.attr("id", "timestamp")
+		    	.attr("x", 20)
+		    	.attr("y", 45)
+		    	.attr("text-anchor", "start")  
+		        .style("font-size", "16px") 
+		        .style("font-family", "Open Sans") 
+		        .text("Timestamp: ");
+
+			svg.selectAll("circle")
+				.transition()
+				.ease("elastic")
+				.delay(function(d) { 
+					return timeScale(d.date) * 1000; })
+				.duration(500)
+				.attr("r", function(d) {
+					var hour = d;
+					d3.select("#timestamp")
+						.transition()
+						.delay(timeScale(hour.date) * 1000)
+						.text(hour.date);
+					return 6.5 * d.charges.length; })
+				.each("end", function(d, i) {
+					d3.select(this).transition()
+						.duration(3000)
+						.attr("r", 0);
+				});
+
+		    });
 		});
-	});
-</script>
+	</script>
 </body>
