@@ -175,19 +175,20 @@
 				.text(function(d) {return d / 5; })
 					.style("font-size", "14px");
 			legend.append("text")
-				.attr("dx", -150)
+				.attr("dx", -160)
 				.attr("dy", 5)
-				.text("Number of Charges")
+				.text("Number of Charges:")
+					.style("font-family", "Open Sans")
 					.style("font-size", "14px");
 
 		    var citation = svg.append("g")
 		    	.attr("class", "citation")
 				.attr("transform", "translate(" + (width-290) + "," + (height-margin.top-margin.bottom - 30) + ")");
 			citation.append("rect")
-				.attr("y", -12.5)
+				.attr("y", -15)
 				.attr("x", -10)
 				.attr("width", 280)
-				.attr("height", 35)
+				.attr("height", 40)
 				.style("fill", "#e6e6e6");
 		    citation.append("text")
 		    	.attr("text-anchor", "start")
