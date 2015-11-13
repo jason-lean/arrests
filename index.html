@@ -1,19 +1,15 @@
 <meta charset="utf-8">
 
 <head>
-	<script src="d3.js"></script>
-	<script src="topojson.js"></script>
+	<script src="js/d3.js"></script>
+	<script src="js/topojson.js"></script>
 
-	<title></title>
+	<title>Criminal Activity in Iowa City</title>
 
 	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'> 
 	<style>
 		body {
 			background-color: #e6e6e6;
-		}
-		.legend {
-			font-family: "Open Sans";
-			font-size: 14px;
 		}
 		.water {
 			fill: #A7B4D9;
@@ -25,16 +21,6 @@
 			fill: none;
 			stroke: #000;
 			stroke-width: .625px;
-		}
-		.arrests {
-			fill: red;
-			fill-opacity:.45;
-			stroke: none;
-		}
-		.citation {
-			font-family: "Open Sans";
-			font-size: 11px;
-			background-color: #e6e6e6;
 		}
 	</style>
 </head>
@@ -94,137 +80,24 @@
 				return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; 
 			});
 		}
-	d3.json("ic-water.json", function(water) {
+
+	d3.json("data/maps/ic-map.json", function(error, map) {
+
 		svg.append("path")
-			.datum(topojson.feature(water, water.objects.water))
+			.datum(topojson.feature(map, map.objects.water))
 			.attr("class", "water")
 			.attr("d", path);
-	});
-	d3.json("ic-buildings.json", function(data) {
+
 		svg.append("path")
-			.datum(topojson.feature(data, data.objects.buildings))
-			.attr("class", "buildings")
-			.attr("d", path);
-	})
-	d3.json("ic-map.json", function(error, IC) {
-		svg.append("path")
-			.datum(topojson.feature(IC, IC.objects.roads))
+			.datum(topojson.feature(map, map.objects.roads))
 			.attr("class", "roads")
 			.attr("d", path);
 
-		d3.csv("arrests-geocoded.csv", function(arrests) {
-			arrests.forEach(function(d) {
-				d.charges = d.charges.split("\n");
-				d.date = timeFormat.parse(d.date);
-			});
-			arrests.sort(function(a, b) { return a.date - b.date; });
-			/*arrests = arrests.filter(function(d) { 
-				return ((timeFormat.parse("10/26/2015  00:00") < d.date) 
-				&& 
-				(d.date > timeFormat.parse("11/2/2015  00:00"))); });*/
-			timeScale.domain(d3.extent(arrests, function(d) { return d.date; }));
+		svg.append("path")
+			.datum(topojson.feature(map, map.objects.buildings))
+			.attr("class", "buildings")
+			.attr("d", path);
 
-			svg.selectAll("circle")
-				.data(arrests)
-				.enter()
-				.append("circle")
-				.attr("class", "arrests")
-				.attr("r", 0)
-				.attr("transform", function(d) {return "translate(" + projection([+d.longitude, +d.latitude]) + ")"; })/*
-				.on("mouseover", function(d,i) {
-			        d3.select(this).transition()
-			            .ease("elastic")
-			            .duration("00")
-			            .attr("r", function(d) { return 10 * d.charges.length; }); })
-			    .on("mouseout", function(d,i) {
-			        d3.select(this).transition()
-			            .ease("quad")
-			            .delay("100")
-			            .duration("300")
-			            .attr("r", 1)})*/
-				.append("text")
-					.text(function(d) { 
-						return "Date: " + d.date + "\nCharges: " + d.charges; });
-
-			title.append("text")
-		        .attr("x", 20)             
-		        .attr("y", 20)
-		        .attr("text-anchor", "start")  
-		        .style("font-size", "24px") 
-		        .style("text-decoration", "bold") 
-		        .style("font-family", "Open Sans") 
-		        .text("Arrest Locations and Severity in Iowa City");
-		    title.append("text")
-		    	.attr("id", "timestamp")
-		    	.attr("x", 20)
-		    	.attr("y", 45)
-		    	.attr("text-anchor", "start")  
-		        .style("font-size", "16px") 
-		        .style("font-family", "Open Sans") 
-		        .text("Timestamp: ");
-
-		    var legend = title.selectAll("g.legend")
-				.data([5, 15, 25])
-				.enter()
-				.append("g")
-		    	.attr("class", "legend")
-				.attr("transform", "translate(" + (width-160) + "," + (40) + ")");
-			legend.append("circle")
-				.attr("cx", function(d, i) { console.log(d);return i * 50; })
-				.attr("cy", -10)
-				.attr("r", function(d, i) { return d * .8; })
-				.style("fill", "red")
-				.style("fill-opacity", .45)
-				.append("text");
-			legend.append("text")
-				.attr("x", function(d, i) { return i * 50; })
-				.attr("dx", function(d) { return -2* .75 * d; })
-				.attr("dy", 5)
-				.text(function(d) {return d / 5; })
-					.style("font-size", "14px");
-			legend.append("text")
-				.attr("dx", -160)
-				.attr("dy", 5)
-				.text("Number of Charges:")
-					.style("font-family", "Open Sans")
-					.style("font-size", "14px");
-
-		    var citation = svg.append("g")
-		    	.attr("class", "citation")
-				.attr("transform", "translate(" + (width-290) + "," + (height-margin.top-margin.bottom - 30) + ")");
-			citation.append("rect")
-				.attr("y", -15)
-				.attr("x", -10)
-				.attr("width", 280)
-				.attr("height", 40)
-				.style("fill", "#e6e6e6");
-		    citation.append("text")
-		    	.attr("text-anchor", "start")
-		        .text("Arrest data scraped from Johnson County Arrest Blotter");
-		    citation.append("text")
-		    	.attr("text-anchor", "start")
-		    	.attr("dy", 15)
-		        .text("Map files taken from Mapzen");
-
-			svg.selectAll("circle")
-				.transition()
-				.ease("elastic")
-				.delay(function(d) { return timeScale(d.date) * 1000; })
-				.duration(500)
-				.attr("r", function(d) {
-					var hour = d;
-					d3.select("#timestamp")
-						.transition()
-						.delay(timeScale(hour.date) * 1000)
-						.text(hour.date);
-					return 7.5 * d.charges.length; })
-				.each("end", function(d, i) {
-					d3.select(this)
-						.transition()
-						.duration(3000)
-						.attr("r", 0);
-				});
-		    });
 		});
 	</script>
 </body>
