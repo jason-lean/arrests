@@ -11,23 +11,21 @@ for row in csv.DictReader(f):
     if key == "*Incident #*":
         continue
 
-    arrestAddress = row.pop("Arrest Location")
-
     dates = row.pop("*Offense Date*\nDate of Birth")
-    perpDOB = dates.split("\n")[1].split(": ")[1]
+    defendantDOB = dates.split("\n")[1].split(": ")[1]
     arrestDate = dates.split("*")[1]
+
+    arrestType = row.pop("*C/A*")
+    arrestAddress = row.pop("Arrest Location")
     arrestCharges = row.pop("*Charge(s)*")
-    arrestC = row.pop("*C/A*")
     #Comment out because splitting leades to a list of charges within the csv when writing
     #arrestCharges = arrestCharges.split("\n")
 
-    print (perpDOB)
-
-    arrests[key] = {"incident#":key, "address":arrestAddress, "date":arrestDate, "charges":arrestCharges}
+    arrests[key] = {"incident#":key, "defendantDOB":defendantDOB, "arrestAddress":arrestAddress, "arrestDate": arrestDate, "arrestType":arrestType, "arrestCharges":arrestCharges}
+    print (arrests[key])
 
 with open("arrests-cleaned.csv", "wb") as outfile:
-    attrNames = ["incident#", "address", "date", "charges"]
-
+    attrNames = ["incident#", "defendantDOB", "arrestAddress", "arrestDate", "arrestType", "arrestCharges"]
     writer = csv.DictWriter(outfile, fieldnames = attrNames)
 
     writer.writeheader()
