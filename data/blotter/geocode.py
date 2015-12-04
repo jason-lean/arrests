@@ -7,26 +7,25 @@ arrests = {}
 f = open("arrests-cleaned.csv")
 
 for row in csv.DictReader(f):
-    
-    #Clean up the address a little
-    dirtyAddress = row["address"]
-    cleanAddress = dirtyAddress.replace("/", " & ")
-    
-    incident = row["incident#"]
-    date = row["date"]
-    charges = row["charges"]
+    incident = row["incident"]
+    defendantDOB = row["defendantDOB"]
+    arrestDate = row["arrestDate"]
+    arrestType = row["arrestType"]
+    arrestCharges = row["arrestCharges"]
 
+    #Clean up the address a little
+    dirtyAddress = row["arrestAddress"]
+    cleanAddress = dirtyAddress.replace("/", " & ")
     #Actual geocoder from google
     geolocator = GoogleV3()
     location = geolocator.geocode(cleanAddress + ", Iowa City, IA", timeout=10)
-
     print ((location.latitude, location.longitude))
-    arrests[incident] = {"incident":incident, "address":location, "date":date, "charges":charges, "latitude":location.latitude, "longitude":location.longitude}
-    time.sleep(1)
+    
+    arrests[incident] = {"incident":key, "defendantDOB":defendantDOB, "arrestAddress":arrestAddress, "arrestDate": arrestDate, "arrestType":arrestType, "arrestCharges":arrestCharges, "latitude":location.latitude, "longitude":location.longitude}
+    time.sleep(10)
 
 with open("arrests-geocoded.csv", "wb") as outfile:
-    attrNames = ["incident", "address", "date", "charges", "latitude", "longitude"]
-
+    attrNames = ["incident", "defendantDOB", "arrestAddress", "arrestDate", "arrestType", "arrestCharges", "latitude", "longitude"]
     writer = csv.DictWriter(outfile, fieldnames = attrNames)
 
     writer.writeheader()
