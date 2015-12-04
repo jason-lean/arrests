@@ -9,14 +9,19 @@ for row in csv.DictReader(f):
     #Use incident number as the key, it's unique. 
     key = row.pop("*Incident #*")
     if key == "*Incident #*":
-        pass
+        continue
 
     arrestAddress = row.pop("Arrest Location")
-    arrestDate = row.pop("*Offense Date*\nDate of Birth")
-    arrestDate = arrestDate.split("*")[1]
+
+    dates = row.pop("*Offense Date*\nDate of Birth")
+    perpDOB = dates.split("\n")[1].split(": ")[1]
+    arrestDate = dates.split("*")[1]
     arrestCharges = row.pop("*Charge(s)*")
+    arrestC = row.pop("*C/A*")
     #Comment out because splitting leades to a list of charges within the csv when writing
     #arrestCharges = arrestCharges.split("\n")
+
+    print (perpDOB)
 
     arrests[key] = {"incident#":key, "address":arrestAddress, "date":arrestDate, "charges":arrestCharges}
 
