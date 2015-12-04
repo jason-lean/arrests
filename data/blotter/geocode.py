@@ -7,20 +7,30 @@ arrests = {}
 f = open("arrests-cleaned.csv")
 
 for row in csv.DictReader(f):
-    incident = row["incident"]
+    incident = row["incident#"]
     defendantDOB = row["defendantDOB"]
     arrestDate = row["arrestDate"]
     arrestType = row["arrestType"]
     arrestCharges = row["arrestCharges"]
 
-    #Clean up the address a little
+
     dirtyAddress = row["arrestAddress"]
-    cleanAddress = dirtyAddress.replace("/", " & ")
-    #Actual geocoder from google
+    if "-" in dirtyAddress:
+        #add rule to check if surrounded. EX: K-Mart
+        dirtyAddress = dirtyAddress.split("-")[1]
+    marks = ["&", "@", "/"]
+    for i in marks:
+        if i in dirtyAddress:
+            dirtyAddress = dirtyAddress.replace(i, " and ")
+    cleanAddress = " ".join(dirtyAddress.split()) #This cleans up any extra whitespaces
+    cleanAddress = cleanAddress.title() #And this (kinda) smarty capitalizes the address for Google
+    print (cleanAddress)
+
+    """#Actual geocoder from google
     geolocator = GoogleV3()
     location = geolocator.geocode(cleanAddress + ", Iowa City, IA", timeout=10)
     print ((location.latitude, location.longitude))
-    
+
     arrests[incident] = {"incident":key, "defendantDOB":defendantDOB, "arrestAddress":arrestAddress, "arrestDate": arrestDate, "arrestType":arrestType, "arrestCharges":arrestCharges, "latitude":location.latitude, "longitude":location.longitude}
     time.sleep(10)
 
@@ -31,3 +41,4 @@ with open("arrests-geocoded.csv", "wb") as outfile:
     writer.writeheader()
     for row in arrests:
         writer.writerow(arrests[row])
+"""
