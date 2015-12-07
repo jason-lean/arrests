@@ -7,9 +7,12 @@
 	<title>Criminal Activity in Iowa City</title>
 
 	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'> 
+
 	<style>
+
 		body {
 			background-color: #F7F7F7;
+			font-family: "Open Sans";
 		}
 		.legend {
 			font-family: "Open Sans";
@@ -43,10 +46,28 @@
 </head>
 
 <body>
-<div id="slider"></div>
-<div id="map"></div>
-<script>
-	var margin = {top:50, right: 20, bottom: 20, left: 20},
+	<div class="container">
+
+		<div class="row">
+			<div class="twelve columns"></div>
+		</div>
+
+		<div class="row">
+			<div class="eight columns" id="chart">
+				<div id="slider"></div>
+				<div id="map"></div>
+			</div>
+			<div class="four columns"></div>
+		</div>
+
+	</div>
+
+	<!-- jQuery -->
+	<script></script>
+
+	<!-- D3.js -->
+	<script>
+var margin = {top:50, right: 20, bottom: 20, left: 20},
 		width = 960,
 	    height = 600,
 	    zoomScale = 409.25,
@@ -59,7 +80,7 @@
 		.pointRadius(1)
 		.projection(projection);
 
-	var timeFormat = d3.time.format("%m/%e/%Y  %H:%M"),
+	var timeFormat = d3.time.format("%e/%d/%Y  %H:%M"),
 		timeScale = d3.time.scale().range([0, 12]);
 
 	var test = d3.behavior.zoom()
@@ -114,15 +135,16 @@
 			.attr("class", "buildings")
 			.attr("d", path);
 
-		d3.json("https://apex.oracle.com/pls/apex/db_mgmt/blotter/all/", function(arrests) {
+		d3.json("https://apex.oracle.com/pls/apex/dbmgroup10/rest/map/", function(arrests) {
 
 			arrests = arrests.items;
 			console.log(arrests);
 
 			//Housekeeping
 			arrests.forEach(function(d) {
-				d.charges = d.charges.split("\n");
-				d.date = timeFormat.parse(d.arrestdate);
+				d.charges = d.arrestcharges.split(", ");
+				d.timestamp = d.timestamp.slice(0,-3);
+				d.date = timeFormat.parse(d.timestamp);
 			});
 			//Sort to prevent occlusion
 			arrests.sort(function(a, b) { return b.charges.length - a.charges.length; });
@@ -138,7 +160,7 @@
 				.on("mouseover", function(d,i) {
 			        d3.select(this).transition()
 			            .ease("elastic")
-			            .duration("00")
+			            .duration("200")
 			            .attr("r", function(d) { return 7.5 * d.charges.length; });	})
 			    .on("mouseout", function(d,i) {
 			        d3.select(this).transition()
@@ -148,7 +170,7 @@
 			            .attr("r", function(d) { return 6 * d.charges.length; });	})
 				.append("title")
 					.text(function(d) { 
-						return "Date: " + d.date + "\nCharges: " + d.charges; });
+						return "Date: " + d.date + "\ncharges: " + d.charges; });
 
 			title.append("text")
 		        .attr("x", 20)             
@@ -174,7 +196,7 @@
 		    	.attr("class", "legend")
 				.attr("transform", "translate(" + (width-160) + "," + (40) + ")");
 			legend.append("circle")
-				.attr("cx", function(d, return) { i i * 50; })
+				.attr("cx", function(d, i) { return i * 50; })
 				.attr("cy", -10)
 				.attr("r", function(d, i) { return d * .8; })
 				.style("fill", "red")
@@ -189,7 +211,7 @@
 			legend.append("text")
 				.attr("dx", -160)
 				.attr("dy", 5)
-				.text("Number of Charges:")
+				.text("Number of charges:")
 					.style("font-family", "Open Sans")
 					.style("font-size", "14px");
 
@@ -210,7 +232,8 @@
 		    	.attr("dy", 15)
 		        .text("Map files taken from Mapzen");
 
+		        console.log(arrests);
 		});
-});
+	});
 	</script>
 </body>
