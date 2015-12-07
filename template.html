@@ -7,7 +7,17 @@
 	<link rel="stylesheet" type="text/css" href="css/normalize.css">
 	<link rel="stylesheet" type="text/css" href="css/skeleton.css">
 	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
-	<style></style> <!-- D3 styling -->
+
+	<!-- Page Styling -->
+	<style type="text/css">
+		text {
+			font-family: "Open Sans";
+		}
+	</style>
+
+	<!-- D3 styling -->
+	<style>
+	</style>
 
 	<!-- Javascript -->
 	<script src="js/d3.js"></script>
@@ -16,6 +26,44 @@
 </head>
 
 <body>
+	<div class="container">
+        <div class="row">
+            <div class="Onboard">
+		<div class="row">
+			<div class="eight columns" id="map"></div>
+            <div class="three columns" id="multiples"></div>
+        </div>
+        <div class="row">
+            <div class="twelve columns"></div>
+        </div>
+	</div>
 
-<script></script>
+	<script>
+/*
+var mapMargin = {left:20, top:100, right:10, bottom:10},
+    multiplesMargin = {left:10, top:100, right:20, bottom:10},
+    barMargin = {left:20, top:10, right:20, bottom:20};
+var mapWidth = ### - mapMargin.left - mapMargin.right,
+    mapHeight = ### - mapMargin.top - mapMargin.bottom;
+var multiplesWidth = ### - multiplesMargin.left - multiplesMargin.right,
+    multiplesHeight = ### - multiplesWidth.top - multiplesMargin.bottom;
+var barWidth = ### - barMargin.left - barMargin.right,
+    barHeight = ### - barMargin.top - barMargin.bottom;
+*/
+var map = d3.select("#map")
+    .attr("width", 600)
+    .attr("height", 500)
+    .append("g")
+        .attr("transform", function(d) { return "translate(" + 20 + "," + 10 + ")" }),
+    multiples = d3.select("#multiples")
+    .attr("width", 300)
+    .attr("height", 500)
+    .append("g")
+        .attr("transform", function(d) { return "translate(" + 10 + "," + 10 }),
+    bar = d3.select("#bar")
+        .attr("width", 960)
+        .attr("height", 400)
+        .append("g")
+            .attr("transform", function(d) { return "translate(" + 20 + "," + 10 })
+    </script>
 </body>
